@@ -971,14 +971,18 @@
                                     CornerRadius = dim(0, 7)
                                 }); 
 
-                                multi_items[ "tab" ] = library:create( "Frame" , {
+                                multi_items[ "tab" ] = library:create( "ScrollingFrame" , {
                                     Parent = library.cache;
+                                    Active = true;
                                     BackgroundTransparency = 1;
                                     Name = "\0";
                                     BorderColor3 = rgb(0, 0, 0);
                                     Size = dim2(1, -20, 1, -20);
                                     BorderSizePixel = 0;
                                     Visible = false;
+                                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
+                                    ScrollBarThickness = 0;
+                                    ScrollBarImageColor3 = rgb(44, 44, 46);
                                     BackgroundColor3 = rgb(255, 255, 255)
                                 });
                                 
