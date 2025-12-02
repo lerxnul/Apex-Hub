@@ -482,7 +482,7 @@
                 suffix = properties.suffix or properties.Suffix or "Hub";
                 name = properties.name or properties.Name or "Apex";
                 game_name = properties.gameInfo or properties.game_info or properties.GameInfo or "Apex Hub for Ink Game";
-                size = properties.size or properties.Size or dim2(0, 400, 0, 300);
+                size = properties.size or properties.Size or dim2(0, 300, 0, 565);
                 selected_tab;
                 items = {};
 
