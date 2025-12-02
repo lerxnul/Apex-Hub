@@ -3733,4 +3733,84 @@
             end)
         end
 
-return library
+	local UserInputService = game:GetService("UserInputService")
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local player = Players.LocalPlayer
+	local playerGui = player:WaitForChild("PlayerGui")
+
+	local mobileToggleGui
+
+	local function isMobileDevice()
+		return UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+	end
+
+	local function findApexGuis()
+		local matches = {}
+		for _, gui in ipairs(playerGui:GetChildren()) do
+			if gui:IsA("ScreenGui") and (gui.Name:find("Apex") or gui.Name:find("Hub")) then
+				table.insert(matches, gui)
+			end
+		end
+		return matches
+	end
+
+	local function applyMobileScaleToGui(gui)
+		if gui:FindFirstChild("ApexMobileScale") then return end
+		local uiScale = Instance.new("UIScale")
+		uiScale.Name = "ApexMobileScale"
+		uiScale.Parent = gui
+		local function updateScale()
+			local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1280,720)
+			local factor = math.clamp(math.min(viewport.X/1280, viewport.Y/720), 0.6, 1)
+			uiScale.Scale = factor
+		end
+		updateScale()
+		RunService.RenderStepped:Connect(updateScale)
+	end
+
+	local function setAllApexGuisVisible(visible)
+		for _, gui in ipairs(findApexGuis()) do
+			if gui:IsA("ScreenGui") and gui ~= mobileToggleGui then
+				if gui.Enabled ~= nil then
+					gui.Enabled = visible
+				else
+					gui.Parent = visible and playerGui or mobileToggleGui
+				end
+			end
+		end
+	end
+
+	mobileToggleGui = Instance.new("ScreenGui")
+	mobileToggleGui.Name = "ApexMobileToggle"
+	mobileToggleGui.ResetOnSpawn = false
+	mobileToggleGui.Parent = playerGui
+
+	local toggleBtn = Instance.new("TextButton")
+	toggleBtn.Name = "ApexToggleButton"
+	toggleBtn.Text = "Menu"
+	toggleBtn.Font = Enum.Font.SourceSansBold
+	toggleBtn.TextSize = 20
+	toggleBtn.Size = UDim2.new(0,60,0,60)
+	toggleBtn.Position = UDim2.new(0,10,1,-70)
+	toggleBtn.AnchorPoint = Vector2.new(0,1)
+	toggleBtn.BackgroundTransparency = 0.35
+	toggleBtn.Visible = true
+	toggleBtn.Parent = mobileToggleGui
+
+	local opened = false
+	toggleBtn.MouseButton1Click:Connect(function()
+		opened = not opened
+		setAllApexGuisVisible(opened)
+	end)
+
+	if isMobileDevice() then
+		for _, gui in ipairs(findApexGuis()) do
+			applyMobileScaleToGui(gui)
+		end
+		setAllApexGuisVisible(false)
+	else
+		mobileToggleGui:Destroy()
+	end
+
+	return library
