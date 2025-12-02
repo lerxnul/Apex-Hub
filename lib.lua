@@ -479,8 +479,8 @@
 
         function library:window(properties)
             local cfg = { 
-                suffix = properties.suffix or properties.Suffix or "user";
-                name = properties.name or properties.Name or "unknown";
+                suffix = properties.suffix or properties.Suffix or "Hub";
+                name = properties.name or properties.Name or "Apex";
                 game_name = properties.gameInfo or properties.game_info or properties.GameInfo or "Apex Hub for Ink Game";
                 size = properties.size or properties.Size or dim2(0, 700, 0, 565);
                 selected_tab;
@@ -765,7 +765,7 @@
                         BorderColor3 = rgb(0, 0, 0);
                         Parent = items[ "button" ];
                         AnchorPoint = vec2(0, 0.5);
-                        Image = "http://www.roblox.com/asset/?id=6034767608";
+                        Image = cfg.icon;
                         BackgroundTransparency = 1;
                         Position = dim2(0, 10, 0.5, 0);
                         Name = "\0";
