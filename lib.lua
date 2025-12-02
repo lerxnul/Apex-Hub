@@ -980,7 +980,7 @@
                                     Size = dim2(1, -20, 1, -20);
                                     BorderSizePixel = 0;
                                     Visible = false;
-                                    AutomaticCanvasSize = Enum.AutomaticSize.None;
+                                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
                                     ScrollBarThickness = 0;
                                     ScrollBarImageColor3 = rgb(44, 44, 46);
                                     BackgroundColor3 = rgb(255, 255, 255)
@@ -1002,25 +1002,6 @@
                                     PaddingRight = dim(0, 7);
                                     PaddingLeft = dim(0, 7)
                                 });
-
-                                task.spawn(function()
-                                    local tab_frame = multi_items[ "tab" ]
-                                    local layout = tab_frame:FindFirstChildOfClass("UIListLayout")
-
-                                    if not layout then
-                                        return
-                                    end
-
-                                    local function update_scroll()
-                                        local content_y = layout.AbsoluteContentSize.Y + 14
-                                        tab_frame.CanvasSize = dim_offset(0, content_y)
-                                        tab_frame.ScrollingEnabled = content_y > tab_frame.AbsoluteSize.Y
-                                    end
-
-                                    layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(update_scroll)
-                                    tab_frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(update_scroll)
-                                    update_scroll()
-                                end)
                         end
 
                         data.text = multi_items[ "name" ]
