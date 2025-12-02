@@ -198,10 +198,11 @@
         end
 
         function library:resizify(frame) 
+            local handle_size = (uis.TouchEnabled and not uis.MouseEnabled) and 50 or 12
             local Frame = Instance.new("TextButton")
-            Frame.Position = dim2(1, -10, 1, -10)
+            Frame.Position = dim2(1, -handle_size, 1, -handle_size)
             Frame.BorderColor3 = rgb(0, 0, 0)
-            Frame.Size = dim2(0, 10, 0, 10)
+            Frame.Size = dim2(0, handle_size, 0, handle_size)
             Frame.BorderSizePixel = 0
             Frame.BackgroundColor3 = rgb(255, 255, 255)
             Frame.Parent = frame
@@ -247,7 +248,11 @@
                         )
                     )
 
-                    library:tween(frame, {Size = current_size}, Enum.EasingStyle.Linear, 0.05)
+                    if input.UserInputType == Enum.UserInputType.Touch then
+                        frame.Size = current_size
+                    else
+                        library:tween(frame, {Size = current_size}, Enum.EasingStyle.Linear, 0.05)
+                    end
                 end
             end)
         end 
@@ -832,7 +837,6 @@
                         FillDirection = Enum.FillDirection.Horizontal
                     });
 
-                    -- Keep CanvasSize locked to horizontal content only (prevent vertical scrolling)
                     multi_list_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
                         pcall(function()
                             items[ "multi_section_button_holder" ].CanvasSize = dim_offset(multi_list_layout.AbsoluteContentSize.X, 0)
@@ -847,7 +851,6 @@
                         PaddingLeft = dim(0, 7)
                     });
 
-                    -- Enable click/touch drag to horizontally scroll the tabs (no visible scrollbar)
                     do
                         local sf = items[ "multi_section_button_holder" ]
                         local dragging = false
@@ -860,7 +863,6 @@
                                 dragStart = input.Position
                                 startCanvas = sf.CanvasPosition
 
-                                -- stop dragging if this input ends
                                 input.Changed:Connect(function()
                                     if input.UserInputState == Enum.UserInputState.End then
                                         dragging = false
@@ -886,7 +888,6 @@
                         end)
                     end
 
-                    -- Map mouse wheel to horizontal scroll when cursor is over the tabs (prevents parent/vertical scroll)
                     library:connection(uis.InputChanged, function(input)
                         if input.UserInputType == Enum.UserInputType.MouseWheel then
                             local sf_local = items[ "multi_section_button_holder" ]
