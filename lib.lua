@@ -820,8 +820,7 @@
                         BorderSizePixel = 0;
                         ClipsDescendants = true;
                         Active = true;
-                        ScrollBarThickness = 6;
-                        ScrollBarImageColor3 = rgb(44, 44, 46);
+                        ScrollBarThickness = 0;
                         AutomaticCanvasSize = Enum.AutomaticSize.X;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
@@ -841,17 +840,44 @@
                         PaddingLeft = dim(0, 7)
                     });
 
-                    -- Allow mousewheel to horizontally scroll the tabs (touch drag works by default)
-                    library:connection(uis.InputChanged, function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseWheel and items[ "multi_section_button_holder" ] then
-                            local sf = items[ "multi_section_button_holder" ]
-                            local delta = (input.Position and input.Position.Z) or 0
-                            local current_x = sf.CanvasPosition.X
+                    -- Enable click/touch drag to horizontally scroll the tabs (no visible scrollbar)
+                    do
+                        local sf = items[ "multi_section_button_holder" ]
+                        local dragging = false
+                        local dragStart = nil
+                        local startCanvas = nil
+
+                        sf.InputBegan:Connect(function(input)
+                            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                                dragging = true
+                                dragStart = input.Position
+                                startCanvas = sf.CanvasPosition
+
+                                -- stop dragging if this input ends
+                                input.Changed:Connect(function()
+                                    if input.UserInputState == Enum.UserInputState.End then
+                                        dragging = false
+                                    end
+                                end)
+                            end
+                        end)
+
+                        uis.InputChanged:Connect(function(input)
+                            if not dragging then return end
+                            if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
+
+                            local delta = input.Position.X - dragStart.X
                             local max_x = math.max(0, sf.CanvasSize.X.Offset - sf.AbsoluteSize.X)
-                            local new_x = clamp(current_x - delta * 60, 0, max_x)
-                            sf.CanvasPosition = Vector2.new(new_x, sf.CanvasPosition.Y)
-                        end
-                    end)
+                            local new_x = clamp(startCanvas.X - delta, 0, max_x)
+                            sf.CanvasPosition = Vector2.new(new_x, 0)
+                        end)
+
+                        uis.InputEnded:Connect(function(input)
+                            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                                dragging = false
+                            end
+                        end)
+                    end
 
                     for _, section in cfg.tabs do
                         local data = {items = {}} 
