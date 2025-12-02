@@ -825,12 +825,19 @@
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
                     
-                    library:create( "UIListLayout" , {
+                    local multi_list_layout = library:create( "UIListLayout" , {
                         Parent = items[ "multi_section_button_holder" ];
                         Padding = dim(0, 7);
                         SortOrder = Enum.SortOrder.LayoutOrder;
                         FillDirection = Enum.FillDirection.Horizontal
                     });
+
+                    -- Keep CanvasSize locked to horizontal content only (prevent vertical scrolling)
+                    multi_list_layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                        pcall(function()
+                            items[ "multi_section_button_holder" ].CanvasSize = dim_offset(multi_list_layout.AbsoluteContentSize.X, 0)
+                        end)
+                    end)
                     
                     library:create( "UIPadding" , {
                         PaddingTop = dim(0, 8);
@@ -878,6 +885,20 @@
                             end
                         end)
                     end
+
+                    -- Map mouse wheel to horizontal scroll when cursor is over the tabs (prevents parent/vertical scroll)
+                    library:connection(uis.InputChanged, function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseWheel then
+                            local sf_local = items[ "multi_section_button_holder" ]
+                            if sf_local and library:mouse_in_frame(sf_local) then
+                                local delta = (input.Position and input.Position.Z) or 0
+                                local current_x = sf_local.CanvasPosition.X
+                                local max_x = math.max(0, sf_local.CanvasSize.X.Offset - sf_local.AbsoluteSize.X)
+                                local new_x = clamp(current_x - delta * 60, 0, max_x)
+                                sf_local.CanvasPosition = Vector2.new(new_x, 0)
+                            end
+                        end
+                    end)
 
                     for _, section in cfg.tabs do
                         local data = {items = {}} 
