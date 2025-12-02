@@ -742,6 +742,7 @@
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, -216, 1, -101);
                     BorderSizePixel = 0;
+                    ClipsDescendants = true;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
                 
@@ -809,7 +810,7 @@
                         ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                     });
 
-                    items[ "multi_section_button_holder" ] = library:create( "Frame" , {
+                    items[ "multi_section_button_holder" ] = library:create( "ScrollingFrame" , {
                         Parent = library.cache;
                         BackgroundTransparency = 1;
                         Name = "\0";
@@ -817,6 +818,11 @@
                         BorderColor3 = rgb(0, 0, 0);
                         Size = dim2(1, 0, 1, 0);
                         BorderSizePixel = 0;
+                        ClipsDescendants = true;
+                        Active = true;
+                        ScrollBarThickness = 6;
+                        ScrollBarImageColor3 = rgb(44, 44, 46);
+                        AutomaticCanvasSize = Enum.AutomaticSize.X;
                         BackgroundColor3 = rgb(255, 255, 255)
                     });
                     
@@ -833,7 +839,19 @@
                         Parent = items[ "multi_section_button_holder" ];
                         PaddingRight = dim(0, 7);
                         PaddingLeft = dim(0, 7)
-                    });                        
+                    });
+
+                    -- Allow mousewheel to horizontally scroll the tabs (touch drag works by default)
+                    library:connection(uis.InputChanged, function(input)
+                        if input.UserInputType == Enum.UserInputType.MouseWheel and items[ "multi_section_button_holder" ] then
+                            local sf = items[ "multi_section_button_holder" ]
+                            local delta = (input.Position and input.Position.Z) or 0
+                            local current_x = sf.CanvasPosition.X
+                            local max_x = math.max(0, sf.CanvasSize.X.Offset - sf.AbsoluteSize.X)
+                            local new_x = clamp(current_x - delta * 60, 0, max_x)
+                            sf.CanvasPosition = Vector2.new(new_x, sf.CanvasPosition.Y)
+                        end
+                    end)
 
                     for _, section in cfg.tabs do
                         local data = {items = {}} 
