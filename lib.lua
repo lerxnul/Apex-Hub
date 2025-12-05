@@ -233,13 +233,19 @@
                     local viewport_x = camera.ViewportSize.X
                     local viewport_y = camera.ViewportSize.Y
 
-                    local new_x = math.max(start_size.X.Offset + (input.Position.X - start.X), og_size.X.Offset)
-                    local new_y = math.max(start_size.Y.Offset + (input.Position.Y - start.Y), og_size.Y.Offset)
                     local current_size = dim2(
                         start_size.X.Scale,
-                        new_x,
+                        math.clamp(
+                            start_size.X.Offset + (input.Position.X - start.X),
+                            og_size.X.Offset,
+                            viewport_x
+                        ),
                         start_size.Y.Scale,
-                        new_y
+                        math.clamp(
+                            start_size.Y.Offset + (input.Position.Y - start.Y),
+                            og_size.Y.Offset,
+                            viewport_y
+                        )
                     )
 
                     if input.UserInputType == Enum.UserInputType.Touch then
@@ -299,10 +305,20 @@
                     local viewport_x = camera.ViewportSize.X
                     local viewport_y = camera.ViewportSize.Y
 
-                    local new_x = start_size.X.Offset + (input.Position.X - start.X)
-                    local new_y = start_size.Y.Offset + (input.Position.Y - start.Y)
-
-                    local current_position = dim2(0, new_x, 0, new_y)
+                    local current_position = dim2(
+                        0,
+                        clamp(
+                            start_size.X.Offset + (input.Position.X - start.X),
+                            0,
+                            viewport_x - frame.Size.X.Offset
+                        ),
+                        0,
+                        math.clamp(
+                            start_size.Y.Offset + (input.Position.Y - start.Y),
+                            0,
+                            viewport_y - frame.Size.Y.Offset
+                        )
+                    )
 
                     library:tween(frame, {Position = current_position}, Enum.EasingStyle.Linear, 0.05)
                     library:close_element()
@@ -701,97 +717,6 @@
                 library:draggify(items[ "main" ])
                 library:resizify(items[ "main" ])
             end 
-
-            if uis.TouchEnabled and not uis.MouseEnabled then
-                library[ "mobile_toggle_gui" ] = library:create( "ScreenGui" , {
-                    Parent = coregui;
-                    Name = "\0_mobile_toggle";
-                    Enabled = true;
-                    ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-                    IgnoreGuiInset = true;
-                });
-
-                local mobile_toggle = library:create( "TextButton" , {
-                    Parent = library[ "mobile_toggle_gui" ];
-                    Size = dim2(0, 40, 0, 40);
-                    Position = dim2(0, 10, 0.5, -20);
-                    AnchorPoint = vec2(0, 0.5);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.accent;
-                    AutoButtonColor = false;
-                    Text = "";
-                    Name = "\0";
-                    ZIndex = 1000;
-                });
-
-                library:create( "UICorner" , {
-                    Parent = mobile_toggle;
-                    CornerRadius = dim(0, 6)
-                });
-
-                local mobile_icon = library:create( "TextLabel" , {
-                    FontFace = fonts.font;
-                    TextColor3 = rgb(255, 255, 255);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "≡";
-                    Parent = mobile_toggle;
-                    Name = "\0";
-                    Size = dim2(1, 1, 1, 1);
-                    BackgroundTransparency = 1;
-                    TextSize = 20;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-
-                library:apply_theme(mobile_toggle, "accent", "BackgroundColor3");
-                library:apply_theme(mobile_icon, "accent", "TextColor3");
-
-                local dragging_toggle = false
-                local drag_start = nil
-                local start_pos = mobile_toggle.Position
-                local toggle_moved = false
-
-                mobile_toggle.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        dragging_toggle = true
-                        drag_start = input.Position
-                        start_pos = mobile_toggle.Position
-                        toggle_moved = false
-
-                        input.Changed:Connect(function()
-                            if input.UserInputState == Enum.UserInputState.End then
-                                dragging_toggle = false
-                            end
-                        end)
-                    end
-                end)
-
-                library:connection(uis.InputChanged, function(input)
-                    if not dragging_toggle then return end
-                    if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
-
-                    local delta = input.Position - drag_start
-                    if math.abs(delta.X) > 6 or math.abs(delta.Y) > 6 then
-                        toggle_moved = true
-                    end
-
-                    local new_x = start_pos.X.Offset + delta.X
-                    local new_y = start_pos.Y.Offset + delta.Y
-                    mobile_toggle.Position = dim2(0, new_x, 0, new_y)
-                end)
-
-                library:connection(uis.InputEnded, function(input)
-                    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        dragging_toggle = false
-                    end
-                end)
-
-                mobile_toggle.MouseButton1Click:Connect(function()
-                    if not toggle_moved then
-                        cfg.toggle_menu(not library[ "items" ].Enabled)
-                    end
-                end)
-            end
 
             function cfg.toggle_menu(bool) 
                 library[ "items" ].Enabled = bool
