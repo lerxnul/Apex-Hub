@@ -743,8 +743,53 @@
                     BackgroundColor3 = rgb(255, 255, 255)
                 });
 
+                library:apply_theme(mobile_toggle, "accent", "BackgroundColor3");
+                library:apply_theme(mobile_icon, "accent", "TextColor3");
+
+                local dragging_toggle = false
+                local drag_start = nil
+                local start_pos = mobile_toggle.Position
+                local toggle_moved = false
+
+                mobile_toggle.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging_toggle = true
+                        drag_start = input.Position
+                        start_pos = mobile_toggle.Position
+                        toggle_moved = false
+
+                        input.Changed:Connect(function()
+                            if input.UserInputState == Enum.UserInputState.End then
+                                dragging_toggle = false
+                            end
+                        end)
+                    end
+                end)
+
+                library:connection(uis.InputChanged, function(input)
+                    if not dragging_toggle then return end
+                    if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
+
+                    local delta = input.Position - drag_start
+                    if math.abs(delta.X) > 6 or math.abs(delta.Y) > 6 then
+                        toggle_moved = true
+                    end
+
+                    local new_x = start_pos.X.Offset + delta.X
+                    local new_y = start_pos.Y.Offset + delta.Y
+                    mobile_toggle.Position = dim2(0, new_x, 0, new_y)
+                end)
+
+                library:connection(uis.InputEnded, function(input)
+                    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging_toggle = false
+                    end
+                end)
+
                 mobile_toggle.MouseButton1Click:Connect(function()
-                    cfg.toggle_menu(not library[ "items" ].Enabled)
+                    if not toggle_moved then
+                        cfg.toggle_menu(not library[ "items" ].Enabled)
+                    end
                 end)
             end
 
