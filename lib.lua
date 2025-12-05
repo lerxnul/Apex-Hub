@@ -703,8 +703,16 @@
             end 
 
             if uis.TouchEnabled and not uis.MouseEnabled then
+                library[ "mobile_toggle_gui" ] = library:create( "ScreenGui" , {
+                    Parent = coregui;
+                    Name = "\0_mobile_toggle";
+                    Enabled = true;
+                    ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+                    IgnoreGuiInset = true;
+                });
+
                 local mobile_toggle = library:create( "TextButton" , {
-                    Parent = library[ "items" ];
+                    Parent = library[ "mobile_toggle_gui" ];
                     Size = dim2(0, 40, 0, 40);
                     Position = dim2(0, 10, 0.5, -20);
                     AnchorPoint = vec2(0, 0.5);
@@ -714,6 +722,7 @@
                     AutoButtonColor = false;
                     Text = "";
                     Name = "\0";
+                    ZIndex = 1000;
                 });
 
                 library:create( "UICorner" , {
